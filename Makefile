@@ -51,5 +51,12 @@ demo:
 	@ls -l $(DEMODIR)/demo-pp.data
 	@md5sum $(DEMODIR)/demo-pp.data
 
+	$(PYTHON) -m ic -s 655360 $(DEMODIR)/demo.data
+	@ls -lh $(DEMODIR)/demo.data-00*.png
+	$(PYTHON) -m ic -d -a $(DEMODIR)/demo.data-000.png $(DEMODIR)/demo.data.000
+	$(PYTHON) -m ic -d -a $(DEMODIR)/demo.data-001.png $(DEMODIR)/demo.data.001
+	@cat $(DEMODIR)/demo.data.000 $(DEMODIR)/demo.data.001 > $(DEMODIR)/demo.data-xxx
+	@md5sum $(DEMODIR)/demo.data-xxx
+
 	@rm -rfv $(DEMODIR)/demo*
 	@rm -rfv $(DEMODIR)

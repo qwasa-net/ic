@@ -10,7 +10,7 @@ def parse_args():
         "-w",
         "--width",
         type=int,
-        default=1024,
+        default=2400,
     )
     parser.add_argument(
         "-d",
@@ -22,6 +22,12 @@ def parse_args():
         "--autocrop",
         action="store_true",
         default=False,
+    )
+    parser.add_argument(
+        "-s",
+        "--split",
+        type=int,
+        default=5 * 1024 * 1024,
     )
     parser.add_argument("infile")
     parser.add_argument("outfile", nargs="?")
@@ -42,12 +48,15 @@ def main():
 def encode(args):
     coder = SimpleCoder(args.width)
     data = open(args.infile, "rb").read()
-    image = coder.encode(data, args.infile)
-    if args.outfile is None:
-        args.outfile = args.infile + ".png"
-    image.save(args.outfile, "PNG")
-    w, h = image.size
-    print(f"encoded: {len(data)} bytes to `{args.outfile}` ({w}x{h})")
+    datas = []
+    for i in range(0, len(data), args.split):
+        datas.append(data[i : i + args.split])
+    for i, data in enumerate(datas):
+        image = coder.encode(data, args.infile)
+        outfile = args.outfile or f"{args.infile}-{i:03d}.png"
+        image.save(outfile, "PNG")
+        w, h = image.size
+        print(f"encoded: {len(data)} bytes to `{outfile}` ({w}x{h})")
 
 
 def decode(args):
