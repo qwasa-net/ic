@@ -1,0 +1,17 @@
+# ignored python junk
+__pycache__/
+*.py[cod]
+.env
+.venv
+env/
+venv/
+
+# temp files
+*.tmp
+*.log
+*.bak
+*.swp
+
+# ignored r&d and deployment stuff
+_kakas/
+_keys/
