@@ -8,6 +8,10 @@ SYSTEM_PYTHON ?= python3
 
 SRCFILES := ic
 
+.PHONY: tea venv format lint clear demo
+
+tea: venv format lint demo
+
 venv: ##
 	test -d $(VENV_PATH) || $(SYSTEM_PYTHON) -m venv $(VENV_PATH) --clear
 	$(PYTHON) -m pip install --requirement requirements.txt
@@ -25,8 +29,10 @@ clear:  ##
 	rm -rvf $(SRCFILES)/**/*.pyc
 	rm -rvf $(SRCFILES)/**/__pycache__
 
-demo: DEMODIR := $(shell mktemp -d)
+demo: DEMODIR := $(shell mktemp --directory --dry-run)
 demo:
+	mkdir -pv $(DEMODIR)
+
 	dd if=/dev/random of=$(DEMODIR)/demo.data bs=1048576 count=1
 	@ls -l $(DEMODIR)/demo.data
 	@md5sum $(DEMODIR)/demo.data
@@ -47,5 +53,3 @@ demo:
 
 	@rm -rfv $(DEMODIR)/demo*
 	@rm -rfv $(DEMODIR)
-
-
