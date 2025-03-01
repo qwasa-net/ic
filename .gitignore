@@ -13,5 +13,4 @@ venv/
 *.swp
 
 # ignored r&d and deployment stuff
-_kakas/
-_keys/
+[_\.]*/

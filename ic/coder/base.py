@@ -25,3 +25,8 @@ class FormatV1:
     )
     BOOTSTRAP_SIZE = 41
     HEADER_SIZE = 69
+    NAME_LENGTH = 64
+
+    @classmethod
+    def checksum(cls, data: bytes) -> int:
+        return sum(data) % (2 ** (3 * 8))

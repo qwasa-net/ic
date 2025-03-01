@@ -29,15 +29,34 @@ def parse_args():
         type=int,
         default=5 * 1024 * 1024,
     )
+    parser.add_argument(
+        "-x",
+        "--xor",
+        type=str,
+        default=None,
+    )
+    parser.add_argument(
+        "-xm",
+        "--xor-magic",
+        action="store_true",
+        default=False,
+    )
     parser.add_argument("infile")
     parser.add_argument("outfile", nargs="?")
-    return parser.parse_args()
+
+    args, _ = parser.parse_known_args()
+
+    if args.xor_magic:
+        args.xor = b"".join([bytes([i]) for i in range(256)])
+    if isinstance(args.xor, str):
+        args.xor = args.xor.encode("utf-8")
+
+    return args
 
 
 def main():
 
     args = parse_args()
-    print(args)
 
     if args.decode:
         decode(args)
@@ -46,12 +65,9 @@ def main():
 
 
 def encode(args):
-    coder = SimpleCoder(args.width)
-    data = open(args.infile, "rb").read()
-    datas = []
-    for i in range(0, len(data), args.split):
-        datas.append(data[i : i + args.split])
+    datas = read_data_chunks(args)
     for i, data in enumerate(datas):
+        coder = SimpleCoder(w=args.width)
         image = coder.encode(data, args.infile)
         outfile = args.outfile or f"{args.infile}-{i:03d}.png"
         image.save(outfile, "PNG")
@@ -62,15 +78,33 @@ def encode(args):
 def decode(args):
     if args.autocrop:
         cropper = SimpleAutoCropper(args.infile)
-        cropper.autocrop()
-        decoder = SimpleDecoder(cropper.image)
+        image = cropper.autocrop()
     else:
-        decoder = SimpleDecoder(args.infile)
+        image = args.infile
+    decoder = SimpleDecoder(image)
     data, name = decoder.decode()
-    if args.outfile is not None:
-        name = args.outfile
-    open(name, "wb").write(data)
+    data = xor_bunny_boyz(data, args.xor)
+    outfile = args.outfile or name
+    open(outfile, "wb").write(data)
     print(f"decoded: {len(data)} bytes to `{name}`")
+
+
+def read_data_chunks(args):
+    datas = []
+    with open(args.infile, "rb") as infile:
+        while chunk := infile.read(args.split):
+            data = xor_bunny_boyz(chunk, args.xor)
+            datas.append(data)
+    return datas
+
+
+def xor_bunny_boyz(data, xor):
+    if not xor:
+        return data
+    xdata = bytearray(data)
+    for i in range(len(data)):
+        xdata[i] ^= xor[i % len(xor)]
+    return bytes(xdata)
 
 
 if __name__ == "__main__":
