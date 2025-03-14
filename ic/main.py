@@ -25,6 +25,12 @@ def parse_args():
         default=False,
     )
     parser.add_argument(
+        "-bp",
+        "--base-filepath",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
         "-a",
         "--autocrop",
         action="store_true",
@@ -72,13 +78,13 @@ def main():
         encode(args)
 
 
-def encode(args):
+def encode(args, img_type="PNG"):
     datas = read_data_chunks(args)
     for i, data in enumerate(datas):
         coder = SimpleCoder(w=args.width)
         image = coder.encode(data, args.infile)
-        outfile = args.outfile or f"{args.infile}-{i:03d}.png"
-        image.save(outfile, "PNG")
+        outfile = args.outfile or f"{args.infile}-{i:03d}.{img_type.lower()}"
+        image.save(outfile, format=img_type)
         w, h = image.size
         print(f"encoded: {len(data)} bytes to `{outfile}` ({w}x{h})")
 
@@ -93,12 +99,16 @@ def decode(args):
     data, name = decoder.decode()
     data = xor_bunny_boyz(data, args.xor)
     outfile = args.outfile or name
-    if args.base_filename:
+    infile_dir = os.path.dirname(args.infile)
+    if args.base_filepath:  # /path/to/file.ext -> path_to_file.ext
+        outfile_paths = os.path.normpath(outfile).split(os.sep)
+        outfile_filename = "_".join(outfile_paths[-5:]).strip("_")
+        outfile = os.path.join(infile_dir, outfile_filename)
+    elif args.base_filename:  # /path/to/file.ext -> file.ext
         outfile_filename = os.path.basename(outfile)
-        infile_dir = os.path.dirname(args.infile)
         outfile = os.path.join(infile_dir, outfile_filename)
     open(outfile, "wb").write(data)
-    print(f"decoded: {len(data)} bytes to `{name}`")
+    print(f"decoded: {len(data)} bytes of `{name}` to `{outfile}`")
 
 
 def read_data_chunks(args):
