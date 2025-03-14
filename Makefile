@@ -30,7 +30,7 @@ clear:  ##
 	rm -rvf $(SRCFILES)/**/__pycache__
 
 demo: DEMODIR := $(shell mktemp --directory --dry-run)
-demo: XOR := $(shell head -c 16 /dev/urandom | xxd -p)
+demo: XOR := $(shell head -c 256 /dev/urandom | md5sum --binary | cut -d' ' -f1)
 demo:
 	mkdir -pv "$(DEMODIR)"
 

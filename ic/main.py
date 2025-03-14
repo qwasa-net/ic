@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from .coder.simple import SimpleCoder
 from .decoder.simple import SimpleAutoCropper, SimpleDecoder
@@ -16,6 +17,12 @@ def parse_args():
         "-d",
         "--decode",
         action="store_true",
+    )
+    parser.add_argument(
+        "-b",
+        "--base-filename",
+        action="store_true",
+        default=False,
     )
     parser.add_argument(
         "-a",
@@ -57,6 +64,7 @@ def parse_args():
 def main():
 
     args = parse_args()
+    print(args)
 
     if args.decode:
         decode(args)
@@ -85,6 +93,10 @@ def decode(args):
     data, name = decoder.decode()
     data = xor_bunny_boyz(data, args.xor)
     outfile = args.outfile or name
+    if args.base_filename:
+        outfile_filename = os.path.basename(outfile)
+        infile_dir = os.path.dirname(args.infile)
+        outfile = os.path.join(infile_dir, outfile_filename)
     open(outfile, "wb").write(data)
     print(f"decoded: {len(data)} bytes to `{name}`")
 
