@@ -6,11 +6,11 @@ VENV_PATH ?= $(HOME_PATH)/.venv
 PYTHON ?= PYTHONPATH=$(HOME_PATH) $(VENV_PATH)/bin/python
 SYSTEM_PYTHON ?= python3
 
-SRCFILES := ic
+SRCFILES := ic tests
 
 .PHONY: tea venv format lint clear demo
 
-tea: venv format lint demo
+tea: venv format lint unittests demo
 
 venv: ##
 	test -d $(VENV_PATH) || $(SYSTEM_PYTHON) -m venv $(VENV_PATH) --clear
@@ -24,6 +24,9 @@ format:  ##
 lint:  ##
 	$(PYTHON) -m black --check $(SRCFILES)
 	$(PYTHON) -m ruff check $(SRCFILES)
+
+unittests:  ##
+	$(PYTHON) -m unittest discover --verbose --start-directory tests --pattern "test*.py"
 
 clear:  ##
 	rm -rvf $(SRCFILES)/**/*.pyc

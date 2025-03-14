@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from PIL import Image
 
 from ..coder.base import FormatV1
@@ -8,13 +10,13 @@ class SimpleDecoder(FormatV1, Decoder):
 
     def __init__(
         self,
-        image: Image.Image | str,
+        image: Image.Image | str | Path,
         *args,
         **kwargs,
     ):
         if isinstance(image, Image.Image):
             self.image = image
-        elif isinstance(image, str):
+        elif isinstance(image, (str, Path)):
             self.image = Image.open(image)
         else:
             raise ValueError("invalid image type")
